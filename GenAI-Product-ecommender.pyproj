@@ -40,6 +40,14 @@
     <Compile Include="backend\productsearch\tests\__init__.py" />
     <Compile Include="backend\productsearch\__init__.py" />
     <Compile Include="backend\scripts.py" />
+    <Compile Include="Database\Database Connection.py" />
+    <Compile Include="Database\Insert.py" />
+    <Compile Include="Database\jointables.py" />
+    <Compile Include="Database\loadcsv.py" />
+    <Compile Include="Database\productdescriptionsembeddings.py" />
+    <Compile Include="Database\Select.py" />
+    <Compile Include="Database\SimilaritySearch.py" />
+    <Compile Include="Embeddings\Embeddings.py" />
     <Compile Include="GenAI_Product_ecommender.py" />
   </ItemGroup>
   <ItemGroup>
@@ -55,19 +63,32 @@
     <Folder Include="backend\productsearch\tests\" />
     <Folder Include="backend\productsearch\tests\api\" />
     <Folder Include="backend\productsearch\tests\api\routes\" />
+    <Folder Include="Database\" />
+    <Folder Include="Dataset\" />
+    <Folder Include="Dataset\CSV\" />
+    <Folder Include="Dataset\JSON\" />
+    <Folder Include="Dataset\Tabular\" />
     <Folder Include="data\" />
+    <Folder Include="Embeddings\" />
     <Folder Include="frontend\" />
     <Folder Include="frontend\public\" />
     <Folder Include="frontend\src\" />
     <Folder Include="frontend\src\config\" />
     <Folder Include="frontend\src\styles\" />
     <Folder Include="frontend\src\views\" />
+    <Folder Include="HTML\" />
+    <Folder Include="Pages\" />
   </ItemGroup>
   <ItemGroup>
     <Content Include="backend\productsearch\db\schema\products.yml" />
     <Content Include="backend\productsearch\templates\build\placeholder.txt" />
     <Content Include="backend\productsearch\tests\test_vectors.json" />
     <Content Include="backend\pytest.ini" />
+    <Content Include="Dataset\CSV\Product.csv" />
+    <Content Include="Dataset\CSV\Product_data.csv" />
+    <Content Include="Dataset\JSON\Product.json" />
+    <Content Include="Dataset\JSON\Product_large.json" />
+    <Content Include="Dataset\Tabular\Tabular.docx" />
     <Content Include="data\README.md" />
     <Content Include="frontend\.gitignore" />
     <Content Include="frontend\package-lock.json" />
@@ -104,6 +125,8 @@
     <Content Include="frontend\src\views\Home.tsx" />
     <Content Include="frontend\src\views\index.ts" />
     <Content Include="frontend\tsconfig.json" />
+    <Content Include="HTML\file.html.txt" />
+    <Content Include="Pages\pages.cs" />
   </ItemGroup>
   <Import Project="$(MSBuildExtensionsPath32)\Microsoft\VisualStudio\v$(VisualStudioVersion)\Python Tools\Microsoft.PythonTools.targets" />
   <!-- Uncomment the CoreCompile target to enable the Build command in
