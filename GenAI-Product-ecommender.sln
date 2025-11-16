@@ -1,0 +1,23 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 12.00
+# Visual Studio Version 17
+VisualStudioVersion = 17.6.33723.286
+MinimumVisualStudioVersion = 10.0.40219.1
+Project("{888888A0-9F3D-457C-B088-3A5042F75D52}") = "GenAI-Product-ecommender", "GenAI-Product-ecommender.pyproj", "{8E93E853-9ED2-4F5E-BF56-32265645002E}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Any CPU = Debug|Any CPU
+		Release|Any CPU = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{8E93E853-9ED2-4F5E-BF56-32265645002E}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{8E93E853-9ED2-4F5E-BF56-32265645002E}.Release|Any CPU.ActiveCfg = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(ExtensibilityGlobals) = postSolution
+		SolutionGuid = {DDF0DFE8-C095-4ED1-AD35-84F8B1F5714A}
+	EndGlobalSection
+EndGlobal
