@@ -1,0 +1,33 @@
+rules:
+
+  - id: require-traceability
+    description: Every specification must be linked to a business goal.
+    severity: error
+
+    requiredFields:
+      - businessGoalId
+      - requirementId
+      - acceptanceCriteria
+
+    message: >
+      Missing traceability information.
+      Every specification must reference a business objective.
+
+  - id: measurable-nfr
+    description: Non-functional requirements must contain measurable thresholds.
+    severity: error
+
+    forbiddenWords:
+      - fast
+      - scalable
+      - reliable
+      - efficient
+
+    requiredMetrics:
+      - latency
+      - availability
+      - errorRate
+
+    message: >
+      NFRs must contain measurable targets such as
+      latency, availability, throughput, or error rate.
