@@ -662,6 +662,7 @@ body {
       <!-- Quick prompts -->
       <div class="quick-prompts">
         <span style="font-size:0.65rem;color:var(--text-muted);margin-right:4px;">Suggested:</span>
+        <button class="qp-chip" data-query="Complete party outfit under ₹5,000">✨ Complete Outfit Bundle</button>
         <button class="qp-chip" data-query="Find wireless headphones under ₹10,000 with excellent battery life">Headphones under ₹10k</button>
         <button class="qp-chip" data-query="Find a laptop under ₹80,000 for Python and machine learning">ML laptop under ₹80k</button>
         <button class="qp-chip" data-query="Find running shoes under ₹8,000, size 7, for daily road running">Running shoes under ₹8k</button>
@@ -4585,16 +4586,75 @@ const INTENT_PARSER = {
     const stopWords = new Set(['find','a','an','the','for','with','under','below','and','or','i','me','my','need','want','looking','good','great','best','please','some','any','at']);
     result.keywords = q.split(/\s+/).filter(w => w.length > 3 && !stopWords.has(w)).slice(0, 8);
 
+    // Extract outfit / bundle intent
+    if (/\b(outfit|outfits|bundle|look|set|styled|complete look|party look|casual look)\b/i.test(q)) {
+      result.is_outfit_intent = true;
+    }
+
     // Confidence
     let conf = 0;
     if (result.category) conf += 40;
     if (result.budget.max) conf += 25;
     if (result.size) conf += 15;
     if (result.brand_preference.length) conf += 10;
-    if (result.use_case.length) conf += 10;
+    if (result.use_case.length || result.is_outfit_intent) conf += 10;
     result.confidence = Math.min(conf, 99);
 
     return result;
+  }
+};
+
+// ---- OUTFIT BUILDER ENGINE ----
+const OUTFIT_BUILDER = {
+  buildOutfit(query, topProduct = null) {
+    let topwear = topProduct ? (topProduct.product || topProduct) : null;
+    if (!topwear && typeof CURATED_CATALOG !== 'undefined' && Array.isArray(CURATED_CATALOG)) {
+      topwear = CURATED_CATALOG.find(p => ['sweatshirt', 't_shirt', 'shirt', 'apparel'].includes(p.category)) || CURATED_CATALOG[0];
+    }
+    if (!topwear) return null;
+
+    const brand = topwear.brand || 'Lee';
+
+    const bottomwear = {
+      id: 'APP-BOTTOM-01',
+      title: `${brand} Slim Fit Dark Indigo Denim Jeans`,
+      brand: brand,
+      category: 'bottomwear',
+      best_price: 2199,
+      rating: 4.7,
+      emoji: '👖',
+      image: 'https://images.unsplash.com/photo-1541099649105-f69ad21f3246?w=500&auto=format&fit=crop&q=60',
+      description: 'Premium stretch denim with tailored tapered fit.'
+    };
+
+    const footwear = {
+      id: 'APP-SHOES-01',
+      title: 'Puma Rebound Low-Top Unisex Sneakers (White)',
+      brand: 'Puma',
+      category: 'footwear',
+      best_price: 2499,
+      rating: 4.8,
+      emoji: '👟',
+      image: 'https://images.unsplash.com/photo-1549298916-b41d501d3772?w=500&auto=format&fit=crop&q=60',
+      description: 'Classic low-top streetwear sneakers with softfoam cushioning.'
+    };
+
+    const originalTotal = (topwear.best_price || 1499) + bottomwear.best_price + footwear.best_price;
+    const bundleDiscount = Math.round(originalTotal * 0.12);
+    const bundlePrice = originalTotal - bundleDiscount;
+
+    return {
+      title: `AI Styled ${brand} Complete Outfit Bundle`,
+      topwear,
+      bottomwear,
+      footwear,
+      originalTotal,
+      bundleDiscount,
+      bundlePrice,
+      savings: bundleDiscount,
+      reasoning: `Paired ${topwear.title} with Indigo Stretch Denim Jeans & Puma White Sneakers for a cohesive, modern smart-casual look. Includes 12% AI Bundle Discount.`,
+      items: [topwear, bottomwear, footwear]
+    };
   }
 };
 
@@ -5882,6 +5942,89 @@ window.UI = {
     }
 
     const msgs = document.getElementById('chat-messages');
+
+    // RENDER AI OUTFIT BUNDLE IF OUTFIT INTENT DETECTED
+    if (intent && (intent.is_outfit_intent || (intent.raw_query || '').toLowerCase().includes('outfit') || (intent.raw_query || '').toLowerCase().includes('bundle'))) {
+      const outfit = typeof OUTFIT_BUILDER !== 'undefined' ? OUTFIT_BUILDER.buildOutfit(intent.raw_query, ranked[0]) : null;
+      if (outfit) {
+        const outfitRow = document.createElement('div');
+        outfitRow.className = 'chat-row';
+        const top = outfit.topwear;
+        const bot = outfit.bottomwear;
+        const shoe = outfit.footwear;
+
+        outfitRow.innerHTML = `
+          <div class="chat-avatar agent-avatar">AI</div>
+          <div class="chat-bubble agent-bubble" style="max-width:92%;width:92%;background:linear-gradient(135deg,rgba(15,23,42,0.95),rgba(30,27,75,0.95));border:1px solid rgba(168,85,247,0.5);box-shadow:0 0 35px rgba(168,85,247,0.25);">
+            <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:10px;padding-bottom:8px;border-bottom:1px solid rgba(255,255,255,0.1);">
+              <div>
+                <span style="background:linear-gradient(135deg,#7c3aed,#ec4899);color:white;padding:3px 10px;border-radius:6px;font-size:0.7rem;font-weight:800;letter-spacing:0.5px;">✨ AI STYLED COMPLETE OUTFIT BUNDLE</span>
+                <span style="background:rgba(16,185,129,0.2);color:#10b981;border:1px solid rgba(16,185,129,0.4);padding:2px 8px;border-radius:4px;font-size:0.65rem;font-weight:700;margin-left:8px;">Save ₹${outfit.savings.toLocaleString('en-IN')} (12% Off)</span>
+              </div>
+              <span style="font-size:0.75rem;color:var(--text-muted);font-weight:600;">Multi-Item Vector Paired</span>
+            </div>
+            <div style="font-size:0.78rem;color:#e2e8f0;margin-bottom:12px;background:rgba(124,58,237,0.12);border-left:3px solid #a855f7;padding:8px 12px;border-radius:0 8px 8px 0;">
+              <strong>Stylist Rationale:</strong> ${outfit.reasoning}
+            </div>
+
+            <!-- OUTFIT ITEMS GRID -->
+            <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(180px,1fr));gap:12px;margin-bottom:14px;">
+              
+              <!-- TOPWEAR -->
+              <div style="background:rgba(255,255,255,0.04);border:1px solid rgba(255,255,255,0.08);border-radius:10px;padding:10px;">
+                <div style="display:flex;align-items:center;gap:8px;margin-bottom:6px;">
+                  <span style="font-size:1.2rem;">${top.emoji || '🧥'}</span>
+                  <div>
+                    <span style="font-size:0.62rem;color:#a855f7;font-weight:800;text-transform:uppercase;">Topwear</span>
+                    <div style="font-size:0.75rem;font-weight:700;color:white;line-height:1.2;">${top.title}</div>
+                  </div>
+                </div>
+                <div style="font-size:0.75rem;color:#10b981;font-weight:800;margin-top:4px;">₹${(top.best_price || 1499).toLocaleString('en-IN')}</div>
+              </div>
+
+              <!-- BOTTOMWEAR -->
+              <div style="background:rgba(255,255,255,0.04);border:1px solid rgba(255,255,255,0.08);border-radius:10px;padding:10px;">
+                <div style="display:flex;align-items:center;gap:8px;margin-bottom:6px;">
+                  <span style="font-size:1.2rem;">${bot.emoji}</span>
+                  <div>
+                    <span style="font-size:0.62rem;color:#06b6d4;font-weight:800;text-transform:uppercase;">Bottomwear</span>
+                    <div style="font-size:0.75rem;font-weight:700;color:white;line-height:1.2;">${bot.title}</div>
+                  </div>
+                </div>
+                <div style="font-size:0.75rem;color:#10b981;font-weight:800;margin-top:4px;">₹${bot.best_price.toLocaleString('en-IN')}</div>
+              </div>
+
+              <!-- FOOTWEAR -->
+              <div style="background:rgba(255,255,255,0.04);border:1px solid rgba(255,255,255,0.08);border-radius:10px;padding:10px;">
+                <div style="display:flex;align-items:center;gap:8px;margin-bottom:6px;">
+                  <span style="font-size:1.2rem;">${shoe.emoji}</span>
+                  <div>
+                    <span style="font-size:0.62rem;color:#f59e0b;font-weight:800;text-transform:uppercase;">Footwear</span>
+                    <div style="font-size:0.75rem;font-weight:700;color:white;line-height:1.2;">${shoe.title}</div>
+                  </div>
+                </div>
+                <div style="font-size:0.75rem;color:#10b981;font-weight:800;margin-top:4px;">₹${shoe.best_price.toLocaleString('en-IN')}</div>
+              </div>
+
+            </div>
+
+            <!-- BUNDLE FOOTER BAR -->
+            <div style="display:flex;align-items:center;justify-content:space-between;background:rgba(0,0,0,0.4);padding:10px 14px;border-radius:10px;border:1px solid rgba(255,255,255,0.08);">
+              <div>
+                <span style="font-size:0.72rem;color:var(--text-muted);">Total Outfit Price:</span>
+                <span style="text-decoration:line-through;color:var(--text-muted);font-size:0.75rem;margin-left:6px;">₹${outfit.originalTotal.toLocaleString('en-IN')}</span>
+                <span style="color:#10b981;font-weight:900;font-size:1rem;margin-left:8px;">₹${outfit.bundlePrice.toLocaleString('en-IN')}</span>
+              </div>
+              <button onclick="window.runUCPSimulator && window.runUCPSimulator('${encodeURIComponent(outfit.title)}', ${outfit.bundlePrice})" style="background:linear-gradient(135deg,#7c3aed,#ec4899);color:white;border:none;padding:8px 16px;border-radius:8px;font-size:0.78rem;font-weight:800;cursor:pointer;box-shadow:0 0 15px rgba(236,72,153,0.4);transition:transform 0.2s;" onmouseover="this.style.transform='scale(1.04)'" onmouseout="this.style.transform='scale(1)'">
+                ⚡ Buy Entire Outfit via UCP (₹${outfit.bundlePrice.toLocaleString('en-IN')})
+              </button>
+            </div>
+
+          </div>`;
+        msgs.appendChild(outfitRow);
+      }
+    }
+
     const rejCount = (hardFailures || []).length;
     const summaryRow = document.createElement('div');
     summaryRow.className = 'chat-row';
